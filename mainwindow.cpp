@@ -25,6 +25,11 @@ MainWindow::MainWindow(QWidget *parent) :
     connect(ui->sliderFrequ ,&QAbstractSlider::valueChanged,this,&MainWindow::changeTimerVal);
     connect(&_timerC2A,&QTimer::timeout,this,&MainWindow::onTimer);
 
+    ui->label_4->setProperty("class","TitleLabel");
+    ui->label_5->setProperty("class","TitleLabel");
+    ui->label_11->setProperty("class","TitleLabel");
+    ui->btnStart->setProperty("class","TitleLabel");
+
 
     LoadSettingsAndEnableUI();
     DetectPorts();
@@ -75,8 +80,16 @@ void MainWindow::DetectPorts()
 
 
 void MainWindow::Log(QString str){
-    ui->txtLog->append(str);
-
+  //  for (int i=0; i<1000; i++)
+  ui->txtLog->append(str);
+  if (ui->txtLog->document()->lineCount()>300){  // dimensione del log
+      QTextCursor cursor (ui->txtLog->document());
+      cursor.movePosition(QTextCursor::Start);
+      cursor.select(QTextCursor::BlockUnderCursor);
+      cursor.removeSelectedText();
+      cursor.deleteChar();
+  }
+      //ui->txtLog->append(QString::number(ui->txtLog->document()->blockCount()));
 }
 
 void MainWindow::LogToFile(){
@@ -99,7 +112,10 @@ void MainWindow::LogToFile(){
          for(int i=0; i<_iNval; i++)
         {
            f.write("\t");
-           f.write(QString::number(_vals[i]).toLatin1());
+           QString datatoSave=QString::number(_vals[i]);
+           if (ui->chkFloat->isChecked())
+               datatoSave.replace('.',',');
+           f.write(datatoSave.toLatin1());
         }
         f.write("\n");
     }
@@ -122,12 +138,16 @@ void MainWindow::StartRead(){
 
         _ptrPort=QSharedPointer<QSerialPort>(new QSerialPort(_portList[i]),&QObject::deleteLater);
         _ptrPort->setBaudRate(QSerialPort::Baud9600);
-        my_connect(_ptrPort,SIGNAL(readyRead()),this,SLOT(onSerialRead()));
         // connect on read
 
         // open and enable port
         _ptrPort->open(QSerialPort::ReadWrite);
         _bEnabled=true;
+        _ptrPort->flush();
+        _ptrPort->clear();
+        my_connect(_ptrPort,SIGNAL(readyRead()),this,SLOT(onSerialRead()));
+
+
         Log("serial port opened");
         ui->btnStart->setText("Stop");
         _timerC2A.start();
@@ -291,6 +311,7 @@ void MainWindow::SaveSettingsAndDisableUI(){
     _psettings->setValue("EnableC2A",ui->chkEnC2A->isChecked()); ui->chkEnC2A->setEnabled(en);
     _psettings->setValue("EnableLog",ui->chkEnLog->isChecked()); ui->chkEnLog->setEnabled(en);
     _psettings->setValue("LogFolder",ui->edtFolderLog->text()); ui->edtFolderLog->setEnabled(en);
+    _psettings->setValue("FloatConversion",ui->chkFloat->isChecked()); ui->chkFloat->setEnabled(en);
     ui->selPort->setEnabled(en);
 
 }
@@ -308,6 +329,7 @@ void MainWindow::LoadSettingsAndEnableUI(){
     ui->chkEnC2A->setChecked(_psettings->value("EnableC2A",true).toBool());     ui->chkEnC2A->setEnabled(en);
     ui->chkEnLog->setChecked(_psettings->value("EnableLog",true).toBool());     ui->chkEnLog->setEnabled(en);
     ui->edtFolderLog->setText(_psettings->value("LogFolder","Log").toString());     ui->edtFolderLog->setEnabled(en);
+    ui->chkFloat->setChecked(_psettings->value("FloatConversion",true).toBool()); ui->chkFloat->setEnabled(en);
 
     ui->selPort->setEnabled(en);
 

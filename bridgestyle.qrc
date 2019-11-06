@@ -1,0 +1,5 @@
+<RCC>
+    <qresource prefix="/bridgestyle">
+        <file>Mystyle.qss</file>
+    </qresource>
+</RCC>

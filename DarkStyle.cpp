@@ -62,12 +62,22 @@ void DarkStyle::polish(QApplication *app) {
   defaultFont.setPointSize(defaultFont.pointSize() + 3);
   app->setFont(defaultFont);
 
-  // loadstylesheet
+  QString qsStylesheet;
+  // loadstylesheet comune
   QFile qfDarkstyle(QStringLiteral(":/darkstyle/darkstyle.qss"));
   if (qfDarkstyle.open(QIODevice::ReadOnly | QIODevice::Text)) {
     // set stylesheet
-    QString qsStylesheet = QString::fromLatin1(qfDarkstyle.readAll());
-    app->setStyleSheet(qsStylesheet);
+    qsStylesheet.append (QString::fromLatin1(qfDarkstyle.readAll()));
     qfDarkstyle.close();
   }
+
+  // loadstylesheet bridge
+  QFile qfmystyle(QStringLiteral(":/bridgestyle/Mystyle.qss"));
+  if (qfmystyle.open(QIODevice::ReadOnly | QIODevice::Text)) {
+    // set stylesheet
+    qsStylesheet.append(QString::fromLatin1(qfmystyle.readAll()));
+    qfmystyle.close();
+  }
+  app->setStyleSheet(qsStylesheet);
+
 }

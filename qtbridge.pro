@@ -44,4 +44,5 @@ FORMS += \
 
 RESOURCES += \
     darkstyle.qrc \
-    framelesswindow.qrc
+    framelesswindow.qrc \
+    bridgestyle.qrc
