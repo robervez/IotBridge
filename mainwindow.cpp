@@ -1,6 +1,7 @@
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
 #include <QtNetwork>
+#include <qdatetime.h>
 
 
 
@@ -18,6 +19,8 @@ MainWindow::MainWindow(QWidget *parent) :
     connect(ui->btnStart,SIGNAL(pressed()),this,SLOT(StartRead()));
 
     connect(this,SIGNAL(PacketReceived()),this,SLOT(SendToHttpURL()));
+    connect(this,SIGNAL(PacketReceived()),this,SLOT(LogToFile()));
+
     connect(&_qnam, &QNetworkAccessManager::finished, this, &MainWindow::replyFinished);
     connect(ui->sliderFrequ ,&QAbstractSlider::valueChanged,this,&MainWindow::changeTimerVal);
     connect(&_timerC2A,&QTimer::timeout,this,&MainWindow::onTimer);
@@ -76,6 +79,32 @@ void MainWindow::Log(QString str){
 
 }
 
+void MainWindow::LogToFile(){
+    if(!ui->chkEnLog->isChecked())
+        return;
+    QString foldername = ui->edtFolderLog->text();
+    if (!QDir(foldername).exists()){
+        QDir().mkdir(foldername);
+    }
+    QString filename=foldername;
+    filename.append("/log_");
+    QDateTime now = QDateTime::currentDateTime();
+    QString format = "yyyyMMMdd";
+    filename.append(now.toString(format));
+    filename.append(".txt");
+    QFile f(filename);
+    if (f.open(QIODevice::WriteOnly | QIODevice::Append)) {
+        f.write(now.toString("hh:mm:ss\t").toLatin1());
+        f.write(QString::number(_iNval).toLatin1());
+         for(int i=0; i<_iNval; i++)
+        {
+           f.write("\t");
+           f.write(QString::number(_vals[i]).toLatin1());
+        }
+        f.write("\n");
+    }
+}
+
 void MainWindow::StartRead(){
 
     if (!_bEnabled){
@@ -87,7 +116,7 @@ void MainWindow::StartRead(){
         _ptrPort.clear();
         int i;
         i = ui->selPort->currentData().toInt();
-        Log(QString::number(i));
+        //Log(QString::number(i));
         if (i<0)
             return;
 
@@ -99,7 +128,7 @@ void MainWindow::StartRead(){
         // open and enable port
         _ptrPort->open(QSerialPort::ReadWrite);
         _bEnabled=true;
-        Log("port opened");
+        Log("serial port opened");
         ui->btnStart->setText("Stop");
         _timerC2A.start();
     }
@@ -122,7 +151,7 @@ void MainWindow::StartRead(){
 
 
 void MainWindow::onSerialRead(){
-    Log("Data Received");
+    //Log("Data Received");
     int i;
     // state machine
     while (!_ptrPort->atEnd()) {
@@ -141,13 +170,19 @@ void MainWindow::onSerialRead(){
                     if (_iFSMState==0){
                        if (_buffer[0]=='#')
                            iFutureState=1;
+                       else
+                           _buffer.clear();
                     }
                     if (_iFSMState==1){
                        int ival = _buffer.toInt();
                        // TODO check
                        _iNval=ival;
                        _iCurVal=0;
-                       iFutureState=2;
+                       if (_iNval)
+                          iFutureState=2;
+                       else
+                           iFutureState=0; // pacchetto inutile
+
                     }
                     if (_iFSMState==2){
                        float fval = _buffer.toFloat();
@@ -162,7 +197,7 @@ void MainWindow::onSerialRead(){
                           {
                             iFutureState=0;
                             QString strTolog;
-                            strTolog=QString("pkt rec: ")+QString::number(_iNval)+QString("|");
+                            strTolog=QString("Data block received from Serial: ")+QString::number(_iNval)+QString("|");
                             for(int j=0; j<_iNval; j++) strTolog+=QString::number(_vals[j])+QString("|");
 
                             Log(strTolog);
@@ -200,7 +235,7 @@ void MainWindow::SendToHttpURL(){
 
         QUrl url;
         url.setUrl(str);
-        Log(str);
+        Log(QString("URL: ")+str);
 
         QNetworkReply *reply;
         reply = _qnam.get(QNetworkRequest(url));
@@ -227,18 +262,20 @@ void MainWindow::onTimer(){
 
 
 void MainWindow::replyFinished(QNetworkReply *reply){
+    // risposta da chiamata A2C
     if (reply->url().toString().contains(ui->edtURLA2C->text())){
-        Log("answer from Arduino to Cloud");
         QByteArray ris = reply->readAll();
-        Log(ris);
+        Log(QString("answer from Arduino to Cloud: ")+ris);
     }
 
+    // risposta da chiamata C2A
     if (reply->url().toString().contains(ui->edtURLC2A->text())){
         Log("answer from Cloud to Arduino");
         QByteArray ris = reply->readAll();
         Log(ris);
     }
 }
+
 
 void MainWindow::SaveSettingsAndDisableUI(){
     bool en;
@@ -252,6 +289,8 @@ void MainWindow::SaveSettingsAndDisableUI(){
     _psettings->setValue("freq",ui->sliderFrequ->value()); ui->sliderFrequ->setEnabled(en);
     _psettings->setValue("EnableA2C",ui->chkEnA2C->isChecked()); ui->chkEnA2C->setEnabled(en);
     _psettings->setValue("EnableC2A",ui->chkEnC2A->isChecked()); ui->chkEnC2A->setEnabled(en);
+    _psettings->setValue("EnableLog",ui->chkEnLog->isChecked()); ui->chkEnLog->setEnabled(en);
+    _psettings->setValue("LogFolder",ui->edtFolderLog->text()); ui->edtFolderLog->setEnabled(en);
     ui->selPort->setEnabled(en);
 
 }
@@ -267,6 +306,9 @@ void MainWindow::LoadSettingsAndEnableUI(){
     ui->sliderFrequ->setValue(_psettings->value("freq",5).toInt());          ui->sliderFrequ->setEnabled(en);
     ui->chkEnA2C->setChecked(_psettings->value("EnableA2C",true).toBool());     ui->chkEnA2C->setEnabled(en);
     ui->chkEnC2A->setChecked(_psettings->value("EnableC2A",true).toBool());     ui->chkEnC2A->setEnabled(en);
+    ui->chkEnLog->setChecked(_psettings->value("EnableLog",true).toBool());     ui->chkEnLog->setEnabled(en);
+    ui->edtFolderLog->setText(_psettings->value("LogFolder","Log").toString());     ui->edtFolderLog->setEnabled(en);
+
     ui->selPort->setEnabled(en);
 
 }

@@ -43,12 +43,39 @@
     <item row="6" column="1">
      <widget class="QLineEdit" name="edtURLA2C"/>
     </item>
-    <item row="16" column="0" colspan="2">
+    <item row="19" column="0" colspan="2">
      <widget class="QPushButton" name="btnStart">
       <property name="text">
        <string>Start</string>
       </property>
      </widget>
+    </item>
+    <item row="18" column="0">
+     <widget class="QLabel" name="label_12">
+      <property name="text">
+       <string>Folder</string>
+      </property>
+     </widget>
+    </item>
+    <item row="16" column="0" colspan="2">
+     <widget class="QLabel" name="label_11">
+      <property name="font">
+       <font>
+        <pointsize>10</pointsize>
+        <weight>75</weight>
+        <bold>true</bold>
+       </font>
+      </property>
+      <property name="text">
+       <string>Log to File</string>
+      </property>
+      <property name="alignment">
+       <set>Qt::AlignCenter</set>
+      </property>
+     </widget>
+    </item>
+    <item row="18" column="1">
+     <widget class="QLineEdit" name="edtFolderLog"/>
     </item>
     <item row="7" column="0">
      <widget class="QLabel" name="label_3">
@@ -80,6 +107,20 @@
       </property>
      </widget>
     </item>
+    <item row="10" column="0">
+     <widget class="QLabel" name="label_10">
+      <property name="text">
+       <string>Enable Cloud to Arduino</string>
+      </property>
+     </widget>
+    </item>
+    <item row="10" column="1">
+     <widget class="QCheckBox" name="chkEnC2A">
+      <property name="text">
+       <string/>
+      </property>
+     </widget>
+    </item>
     <item row="5" column="0">
      <widget class="QLabel" name="label_9">
       <property name="text">
@@ -106,6 +147,13 @@
     </item>
     <item row="9" column="0" colspan="2">
      <widget class="QLabel" name="label_5">
+      <property name="font">
+       <font>
+        <pointsize>10</pointsize>
+        <weight>75</weight>
+        <bold>true</bold>
+       </font>
+      </property>
       <property name="text">
        <string>Http rest request for actuators update (Cloud to Arduino)</string>
       </property>
@@ -119,6 +167,13 @@
     </item>
     <item row="4" column="0" colspan="2">
      <widget class="QLabel" name="label_4">
+      <property name="font">
+       <font>
+        <pointsize>10</pointsize>
+        <weight>75</weight>
+        <bold>true</bold>
+       </font>
+      </property>
       <property name="lineWidth">
        <number>2</number>
       </property>
@@ -144,15 +199,15 @@
       </property>
      </widget>
     </item>
-    <item row="10" column="0">
-     <widget class="QLabel" name="label_10">
+    <item row="17" column="0">
+     <widget class="QLabel" name="label_13">
       <property name="text">
-       <string>Enable Cloud to Arduino</string>
+       <string>Enable Log to File</string>
       </property>
      </widget>
     </item>
-    <item row="10" column="1">
-     <widget class="QCheckBox" name="chkEnC2A">
+    <item row="17" column="1">
+     <widget class="QCheckBox" name="chkEnLog">
       <property name="text">
        <string/>
       </property>

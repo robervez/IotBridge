@@ -45,6 +45,7 @@ public slots:
     void onTimer();
     void SaveSettingsAndDisableUI();
     void LoadSettingsAndEnableUI();
+    void LogToFile();
 
 signals:
     void PacketReceived();
