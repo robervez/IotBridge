@@ -49,6 +49,10 @@ MainWindow::MainWindow(QWidget *parent) :
 
 
 
+    if( _psettings->value("LastRecState",true).toBool()){
+        StartRead();
+    }
+
 }
 
 void MainWindow::changeTimerVal(int val){
@@ -314,6 +318,8 @@ void MainWindow::SaveSettingsAndDisableUI(){
     _psettings->setValue("FloatConversion",ui->chkFloat->isChecked()); ui->chkFloat->setEnabled(en);
     ui->selPort->setEnabled(en);
 
+    //_psettings->setValue("LastRecState",true);
+
 }
 void MainWindow::LoadSettingsAndEnableUI(){
     bool en;
@@ -332,6 +338,7 @@ void MainWindow::LoadSettingsAndEnableUI(){
     ui->chkFloat->setChecked(_psettings->value("FloatConversion",true).toBool()); ui->chkFloat->setEnabled(en);
 
     ui->selPort->setEnabled(en);
+    // _psettings->setValue("LastRecState",false);
 
 }
 
